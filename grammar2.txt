@@ -1,0 +1,10 @@
+statement -> expr ';'
+           | identifier '=' expr ';'
+
+expr -> term
+      | term + expr
+      | term - expr
+      | '(' expr ')'
+
+term -> integer
+      | identifier

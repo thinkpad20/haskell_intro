@@ -1,0 +1,20 @@
+statements -> epsilon
+            | statement statements
+
+statement -> expr ';'
+           | identifier '=' expr ';'
+           | "if" expr "then" expr "else" expr ';'
+
+expr -> term ';'
+      | term + expr
+      | term - expr
+      | term "==" expr
+      | term '>' expr
+      | term '<' expr
+      | '!' expr
+      | '(' expr ')'
+
+term -> integer
+      | "true"
+      | "false"
+      | identifier
