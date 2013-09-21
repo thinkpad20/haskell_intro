@@ -46,14 +46,11 @@ parseExpression = try parseIf <|> getTerm <|> parseParens <|> parseNot
           term <- parseTerm
           let t = ETerm term
           spaces
-          sym <- optionMaybe (oneOf ['+', '-', '>', '<'])
+          let ops = map string ["+", "-", ">", "<", "=="]
+          sym <- optionMaybe (foldr1 (<|>) ops)
           case sym of
             Nothing -> return t
-            Just '+' -> fmap (Plus t) parseExpression
-            Just '-' -> fmap (Minus t) parseExpression
-            Just '<' -> fmap (Lt t) parseExpression
-            Just '>' -> fmap (Gt t) parseExpression
-
+            Just op -> fmap (Binary op t) parseExpression
 
 parseAssign :: Parser Statement
 parseAssign = spaces >> do

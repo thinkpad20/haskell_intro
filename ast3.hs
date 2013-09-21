@@ -7,11 +7,7 @@ data Statement = SExpr Expression
                deriving Show
 
 data Expression = ETerm Term
-                | Plus Expression Expression
-                | Minus Expression Expression
-                | Eq Expression Expression
-                | Lt Expression Expression
-                | Gt Expression Expression
+                | Binary String Expression Expression
                 | Not Expression
                 | If Expression Expression Expression
                 deriving Show
