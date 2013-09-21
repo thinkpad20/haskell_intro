@@ -4,7 +4,6 @@ type Statements = [Statement]
 
 data Statement = SExpr Expression 
                | Assign String Expression
-               | If Expression Expression Expression
                deriving Show
 
 data Expression = ETerm Term
@@ -14,6 +13,7 @@ data Expression = ETerm Term
                 | Lt Expression Expression
                 | Gt Expression Expression
                 | Not Expression
+                | If Expression Expression Expression
                 deriving Show
 
 data Term = Num Int

@@ -32,8 +32,16 @@ parseTerm = fmap Num parseInt
 parseNot :: Parser Expression
 parseNot = spaces >> char '!' >> fmap Not parseExpression
 
+parseIf :: Parser Expression
+parseIf = spaces >> do
+  cond <- (sstring "if" >> parseExpression)
+  ifTrue <- (sstring "then" >> parseExpression)
+  ifFalse <- (sstring "else" >> parseExpression)
+  schar ';'
+  return (If cond ifTrue ifFalse)
+
 parseExpression :: Parser Expression
-parseExpression = getTerm <|> parseParens <|> parseNot
+parseExpression = try parseIf <|> getTerm <|> parseParens <|> parseNot
   where getTerm = do
           term <- parseTerm
           let t = ETerm term
@@ -54,17 +62,8 @@ parseAssign = spaces >> do
   schar ';'
   return (Assign var e)
 
-parseIf :: Parser Statement
-parseIf = spaces >> do
-  cond <- (sstring "if" >> parseExpression)
-  ifTrue <- (sstring "then" >> parseExpression)
-  ifFalse <- (sstring "else" >> parseExpression)
-  schar ';'
-  return (If cond ifTrue ifFalse)
-
 parseStatement :: Parser Statement
-parseStatement = try parseIf
-  <|> try parseAssign
+parseStatement = try parseAssign
   <|> fmap SExpr parseExpression
 
 parseStatements :: Parser Statements
