@@ -1,20 +1,10 @@
-module SimParser where
+module Parser where
 
 import Text.ParserCombinators.Parsec
+import AST
 
-data Statement = SExpr Expression 
-               | Assign String Expression
-               deriving Show
-
-data Expression = ETerm Term
-                | Plus Term Expression
-                | Minus Term Expression
-                deriving Show
-
-data Term = Num Int
-          | Var String
-          | Parens Expression
-          deriving Show
+schar c = spaces >> char c >> spaces
+sstring s = spaces >> string s >> spaces
 
 parseInt :: Parser Int
 parseInt = spaces >> (fmap read $ many1 digit)
@@ -27,40 +17,45 @@ parseTerm = fmap Num parseInt <|> fmap Var parseId
 
 parseParens :: Parser Expression
 parseParens = do
-  spaces >> char '(' >> spaces
+  schar '('
   e <- parseExpression
-  spaces >> char ')'
+  schar ')'
   return e
 
 parseExpression :: Parser Expression
 parseExpression = getTerm <|> parseParens where
   getTerm = do
-    t <- parseTerm
-    spaces
-    sym <- optionMaybe (oneOf ['+', '-'])
+    term <- parseTerm
+    let t = ETerm term
+    sym <- (spaces >> optionMaybe (oneOf ['+', '-']))
     case sym of
-      Nothing -> return $ ETerm t
+      Nothing -> return t
       Just '+' -> fmap (Plus t) parseExpression
       Just '-' -> fmap (Minus t) parseExpression
 
 parseAssign :: Parser Statement
 parseAssign = spaces >> do
   var <- parseId
-  spaces >> char '=' >> spaces
+  schar '='
   e <- parseExpression
-  spaces
-  char ';'
+  schar ';'
   return (Assign var e)
 
 parseStatement :: Parser Statement
 parseStatement = try parseAssign
   <|> do
     e <- parseExpression
-    spaces >> char ';'
+    schar ';'
     return (SExpr e)
 
-run input = case parse parseStatement "sim" input of
+parseStatements :: Parser Statements
+parseStatements = many1 parseStatement
+
+getParse :: String -> Either ParseError Statements
+getParse = parse parseStatements "sim"
+
+run input = case getParse input of
   Right val -> "Found value: " ++ show val
   Left err -> "Parse error: " ++ show err
 
-runParse = putStrLn . run
+printParse = putStrLn . run

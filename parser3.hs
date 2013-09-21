@@ -1,28 +1,7 @@
-module SimParser where
+module Parser where
 
 import Text.ParserCombinators.Parsec
-
-type Statements = [Statement]
-
-data Statement = SExpr Expression 
-               | Assign String Expression
-               | If Expression Expression Expression
-               deriving Show
-
-data Expression = ETerm Term
-                | Plus Expression Expression
-                | Minus Expression Expression
-                | Eq Expression Expression
-                | Lt Expression Expression
-                | Gt Expression Expression
-                | Not Expression
-                deriving Show
-
-data Term = Num Int
-          | Var String
-          | TBool Bool
-          | Parens Expression
-          deriving Show
+import AST
 
 schar c = spaces >> char c >> spaces
 sstring s = spaces >> string s >> spaces
@@ -91,8 +70,11 @@ parseStatement = try parseIf
 parseStatements :: Parser Statements
 parseStatements = many1 parseStatement
 
-run input = case parse parseStatements "sim" input of
+getParse :: String -> Either ParseError Statements
+getParse = parse parseStatements "sim"
+
+run input = case getParse input of
   Right val -> "Found value: " ++ show val
   Left err -> "Parse error: " ++ show err
 
-runParse = putStrLn . run
+printParse = putStrLn . run

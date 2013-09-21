@@ -1,3 +1,6 @@
+statements -> epsilon
+            | statement statements
+
 statement -> expr ';'
            | identifier '=' expr ';'
 

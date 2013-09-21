@@ -1,13 +1,7 @@
-module SimParser where
+module Parser where
 
 import Text.ParserCombinators.Parsec
-
-data Statement = SExpr Expression deriving (Show)
-data Expression = ETerm Term
-                | Plus Term Expression
-                | Minus Term Expression
-                deriving (Show)
-data Term = Num Int deriving (Show)
+import AST
 
 parseInt :: Parser Int
 parseInt = spaces >> (fmap read $ many1 digit)
@@ -17,10 +11,11 @@ parseTerm = spaces >> fmap Num parseInt
 
 parseExpression :: Parser Expression
 parseExpression = spaces >> do 
-  t <- parseTerm
+  term <- parseTerm
+  let t = ETerm term
   sym <- (spaces >> optionMaybe (oneOf ['+', '-']))
   case sym of
-    Nothing -> return $ ETerm t
+    Nothing -> return $ t
     Just '+' -> fmap (Plus t) parseExpression
     Just '-' -> fmap (Minus t) parseExpression
 
@@ -30,8 +25,11 @@ parseStatement = spaces >> do
   spaces >> char ';'
   return (SExpr e)
 
-run input = case parse parseStatement "sim" input of
+getParse :: String -> Either ParseError Statement
+getParse = parse parseStatement "sim"
+
+run input = case getParse input of
   Right val -> "Found value: " ++ show val
   Left err -> "Parse error: " ++ show err
 
-runParse = putStrLn . run
+printParse = putStrLn . run
